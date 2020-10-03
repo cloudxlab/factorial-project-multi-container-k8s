@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress # Ingress Object
+metadata:
+  name: ingress-service
+  annotations: # Additional configuration options
+    kubernetes.io/ingress.class: 'nginx' # Create nginx controller
+    nginx.ingress.kubernetes.io/use-regex: 'true'  # To match rules
+    nginx.ingress.kubernetes.io/rewrite-target: /$1 # Removes "api" from the URL
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /?(.*) # Pass request to react client
+            backend:
+              serviceName: react-client-cluster-ip-service
+              servicePort: 3000
+          - path: /api/?(.*) # If request contains /api, pass it to express server
+            backend:
+              serviceName: express-server-cluster-ip-service
+              servicePort: 5000

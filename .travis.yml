@@ -1,0 +1,32 @@
+sudo: required
+services:
+    - docker
+
+env:
+    global:
+        - GIT_SHA=$(git rev-parse HEAD) # Enviroment variable which holds the current git SHA
+        - CLOUDSDK_CORE_DISABLE_PROMPTS=1 # Do not ask for user input when installing google sdk
+
+before_install:
+    # All this scripts will run inside travis
+    # Install Google Cloud SDK
+    - curl https://sdk.cloud.google.com | bash > /dev/null;
+    - source $HOME/google-cloud-sdk/path.bash.inc # Source the path.bash.inc
+    - gcloud components update kubectl # Install/Update kubectl
+    - openssl aes-256-cbc -K $encrypted_1c152c448d4b_key -iv $encrypted_1c152c448d4b_iv -in factorial-project-k8s-9530ad5b7544.json.enc -out factorial-project-k8s-9530ad5b7544.json -d
+    - gcloud auth activate-service-account --key-file factorial-project-k8s-9530ad5b7544.json # Authenticate to Google cloud. Similar to AWS IAM user we will use service account in GCP. With authentication google-sdk can use our GCP account
+    - gcloud config set project factorial-project-k8s # Your Project ID on GCP
+    - gcloud config set compute/zone us-central1-a # Find this information on your Kubernetes cluster page on GCP
+    - gcloud container clusters get-credentials factorial-project-cluster # Name of your Kubernetes cluster
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin # Login to docker hub
+    - docker build -t singhabhinav/factorial-project-react-client-k8s -f ./react-client/Dockerfile.dev ./react-client # Build the image to run unit test cases
+
+# Tell Travis how to run test suite 
+script:
+    - docker run -e CI=true singhabhinav/factorial-project-react-client-k8s npm run test
+
+deploy:
+    provider: script
+    script: bash ./deploy.sh
+    on:
+        branch: master

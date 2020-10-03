@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment # Deployment object
+metadata:
+  name: react-client-deployment # Name of the deployment
+spec: # Deployment configuration
+    replicas: 3 # Number of replicas of this deployment
+    selector:
+        matchLabels:
+          component: react-client # set of pods this deployment is going to control
+    template: # Pod template
+        metadata:
+            labels:
+                component: react-client # Deployment will use component to identify which pods it has to manage. Pod's label
+        spec: # Specify all the different containers which are going to run inside this pod
+            containers:
+                -  name: react-client # Name of the container
+                   image: singhabhinav/factorial-project-react-client-k8s:dev # Image using which the container will be created
+                   ports: # Port to open
+                    - containerPort: 3000 # This port will be mapped to factorial-project-react-client-k8s image

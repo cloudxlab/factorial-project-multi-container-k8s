@@ -1,0 +1,13 @@
+# When we attach this persistent volume claim to a pod,
+# Kubernetes will get a instance of storgae which has
+# ReadWriteOnce access mode and 100 MB storage
+apiVersion: v1
+kind: PersistentVolumeClaim # PersistentVolumeClaim Object
+metadata:
+  name: database-persistent-volume-claim
+spec:
+  accessModes:
+    - ReadWriteOnce # Can be used for read and write by a single node at a time
+  resources:
+    requests:
+      storage: 0.1Gi # 100MB storage. It is enough for our factorial app

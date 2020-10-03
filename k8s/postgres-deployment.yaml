@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment # Deployment object
+metadata:
+  name: postgres-deployment # Name of the deployment
+spec: # Deployment configuration
+  replicas: 1 # Number of replicas (pods) of this deployment
+  selector:
+    matchLabels:
+      component: postgres # set of pods this deployment is going to control
+  template: # Pod template
+    metadata:
+      labels:
+        component: postgres # Deployment will use component to identify which pods it has to manage. Pod's label
+    spec: # Specify all the different containers which are going to run inside this pod
+      volumes: # Request persistent volume from database-persistent-volume-claim
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: database-persistent-volume-claim # Requirements for Persistent Volume are defined here
+      containers:
+        - name: postgres # Name of the container
+          image: postgres # Image using which the container will be created
+          ports:
+            - containerPort: 5432 # This port will be mapped to postgres image
+          volumeMounts: # Mounting the persistent volume inside the container
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data # Storage will be made available at this path inside the container. This is default data directory of postgres. Anything written at this path in the container will be stored in the host machines hard drive.
+              subPath: postgres # A postgres folder will be created in the host machine hard disk and /var/lib/postgresql/data will be inside that folder 
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pgpassword
+                  key: PGPASSWORD

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service # Service object
+metadata:
+  name: react-client-cluster-ip-service
+spec: # Service configuration
+  type: ClusterIP
+  selector:
+    component: react-client # Same as pod metadata. What set of pods this service should provide access to.
+  ports:
+    - port: 3000 
+      targetPort: 3000
+      # Notice there is no nodePort property

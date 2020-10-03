@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment # Deployment object
+metadata:
+  name: express-server-deployment # Name of the deployment
+spec: # Deployment configuration
+  replicas: 3 # Number of replicas (pods) of this deployment
+  selector:
+    matchLabels:
+      component: express-server # set of pods this deployment is going to control
+  template: # Pod template
+    metadata:
+      labels:
+        component: express-server # Deployment will use component to identify which pods it has to manage. Pod's label
+    spec: # Specify all the different containers which are going to run inside this pod
+      containers:
+        - name: express-server # Name of the container
+          image: singhabhinav/factorial-project-express-server-k8s:dev # Image using which the container will be created
+          ports: # Port to open
+            - containerPort: 5000 # This port will be mapped to factorial-project-express-server-k8s image
+          env: # These environment variables will be passed to container when it will be created inside the pod
+            - name: REDIS_HOST
+              value: redis-cluster-ip-service
+            - name: REDIS_PORT
+              value: '6379'
+            - name: PGUSER
+              value: postgres
+            - name: PGHOST
+              value: postgres-cluster-ip-service
+            - name: PGPORT
+              value: '5432'
+            - name: PGDATABASE
+              value: postgres
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pgpassword
+                  key: PGPASSWORD
